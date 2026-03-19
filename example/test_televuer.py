@@ -17,7 +17,7 @@ def run_test_TeleVuer():
     img_client = ImageClient(host="192.168.123.164")
     camera_config = img_client.get_cam_config()
     # teleimager + televuer
-    tv = TeleVuer(use_hand_tracking=use_hand_track, 
+    tv = TeleVuer(use_hand_tracking=use_hand_track,
                   binocular=camera_config['head_camera']['binocular'],
                   img_shape=camera_config['head_camera']['image_shape'],
                   display_fps=camera_config['head_camera']['fps'],
@@ -27,13 +27,13 @@ def run_test_TeleVuer():
                   webrtc_url=f"https://192.168.123.164:{camera_config['head_camera']['webrtc_port']}/offer"
                   )
     # pure televuer
-    # tv = TeleVuer(use_hand_tracking=use_hand_track, 
-    #               binocular=True, 
-    #               img_shape=(480, 1280), 
+    # tv = TeleVuer(use_hand_tracking=use_hand_track,
+    #               binocular=True,
+    #               img_shape=(480, 1280),
     #               display_fps=30.0,
     #               display_mode="ego",      # "ego" or "immersive" or "pass-through"
     #               zmq=False,
-    #               webrtc=True, 
+    #               webrtc=True,
     #               webrtc_url="https://192.168.123.164:60001/offer"
     #               )
 

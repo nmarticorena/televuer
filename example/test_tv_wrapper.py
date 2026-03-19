@@ -19,23 +19,23 @@ def run_test_tv_wrapper():
     img_client = ImageClient(host="192.168.123.164")
     camera_config = img_client.get_cam_config()
     # teleimager + televuer
-    tv_wrapper = TeleVuerWrapper(use_hand_tracking=use_hand_track, 
+    tv_wrapper = TeleVuerWrapper(use_hand_tracking=use_hand_track,
                                 binocular=camera_config['head_camera']['binocular'],
                                 img_shape=camera_config['head_camera']['image_shape'],
-                                display_mode="immersive", 
+                                display_mode="immersive",
                                 display_fps=camera_config['head_camera']['fps'],
                                 zmq=camera_config['head_camera']['enable_zmq'],
                                 webrtc=camera_config['head_camera']['enable_webrtc'],
                                 webrtc_url=f"https://192.168.123.164:{camera_config['head_camera']['webrtc_port']}/offer"
                                 )
     # pure televuer
-    # tv_wrapper = TeleVuerWrapper(use_hand_tracking=use_hand_track, 
-    #                              binocular=True, 
+    # tv_wrapper = TeleVuerWrapper(use_hand_tracking=use_hand_track,
+    #                              binocular=True,
     #                              img_shape=(480, 1280),
     #                              display_fps=30.0,
-    #                              display_mode="ego", 
+    #                              display_mode="ego",
     #                              zmq=True,
-    #                              webrtc=True, 
+    #                              webrtc=True,
     #                              webrtc_url="https://192.168.123.164:60001/offer"
     #                              )
     try:
@@ -45,7 +45,7 @@ def run_test_tv_wrapper():
             start_time = time.time()
             img, _= img_client.get_head_frame()
             tv_wrapper.render_to_xr(img)
-            
+
             logger_mp.info("---- TV Wrapper TeleData ----")
             teleData = tv_wrapper.get_tele_data()
 

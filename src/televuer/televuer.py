@@ -1,3 +1,5 @@
+import traceback
+from tracemalloc import Traceback
 from vuer import Vuer
 from vuer.schemas import ImageBackground, Hands, MotionControllers, WebRTCVideoPlane, WebRTCStereoVideoPlane
 from multiprocessing import Value, Array, Process, shared_memory
@@ -12,7 +14,7 @@ from typing import Literal
 
 class TeleVuer:
     def __init__(self, use_hand_tracking: bool, binocular: bool=True, img_shape: tuple=None, display_fps: float=30.0,
-                       display_mode: Literal["immersive", "pass-through", "ego"]="immersive", zmq: bool=False, webrtc: bool=False, webrtc_url: str=None, 
+                       display_mode: Literal["immersive", "pass-through", "ego"]="immersive", zmq: bool=False, webrtc: bool=False, webrtc_url: str=None,
                        cert_file: str=None, key_file: str=None):
         """
         TeleVuer class for OpenXR-based XR teleoperate applications.
@@ -22,7 +24,7 @@ class TeleVuer:
         :param binocular: bool, whether the application is binocular (stereoscopic) or monocular.
         :param img_shape: tuple, shape of the head image (height, width).
         :param display_fps: float, target frames per second for display updates (default: 30.0).
-        
+
         :param display_mode: str, controls the VR viewing mode. Options are "immersive", "pass-through", and "ego".
         :param zmq: bool, whether to use zmq for image transmission.
         :param webrtc: bool, whether to use webrtc for real-time communication.
@@ -36,14 +38,14 @@ class TeleVuer:
             * "immersive": fully immersive mode; VR shows the robot's first-person view (zmq or webrtc must be enabled).
             * "pass-through": VR shows the real world through the VR headset cameras; no image from zmq or webrtc is displayed (even if enabled).
             * "ego": a small window in the center shows the robot's first-person view, while the surrounding area shows the real world.
-        
+
         - Only one image mode is active at a time.
         - Image transmission to VR occurs only if display_mode is "immersive" or "ego" and the corresponding zmq or webrtc option is enabled.
         - If zmq and webrtc simultaneously enabled, webrtc will be prioritized.
 
         --------------              -------------------           --------------       -----------------                     -------
          display_mode       |        display behavior         |    image to VR     |      image source        |               Notes
-        --------------              -------------------           --------------       -----------------                     ------- 
+        --------------              -------------------           --------------       -----------------                     -------
            immersive        |   fully immersive view (robot)  |     Yes (full)     |     zmq or webrtc        |   if both enabled, webrtc prioritized
         --------------              -------------------           --------------       -----------------                     -------
          pass-through       |       Real world view (VR)      |         No         |          N/A             |  even if image source enabled, don't display
@@ -132,7 +134,7 @@ class TeleVuer:
             fn = self.main_pass_through
         else:
             raise ValueError(f"[TeleVuer] Unknown display_mode: {self.display_mode}")
-        
+
         self.vuer.spawn(start=False)(fn)
 
         self.head_pose_shared = Array('d', 16, lock=True)
@@ -175,14 +177,15 @@ class TeleVuer:
         self.process = Process(target=self._vuer_run)
         self.process.daemon = True
         self.process.start()
-    
+
     def _vuer_run(self):
         try:
             self.vuer.run()
         except KeyboardInterrupt:
             pass
         except Exception as e:
-            print(f"Vuer encountered an error: {e}")
+            print(f"Vuer encountered an error: {e}",
+                f"{traceback.format_exc()}")
         finally:
             if hasattr(self, "stop_writer_event"):
                 self.stop_writer_event.set()
@@ -197,7 +200,7 @@ class TeleVuer:
             latest_frame = self.latest_frame
             latest_frame = cv2.cvtColor(latest_frame, cv2.COLOR_BGR2RGB)
             self.img2display[:] = latest_frame
-    
+
     def render_to_xr(self, image):
         if self.webrtc or self.display_mode == "pass-through":
             print("[TeleVuer] Warning: render_to_xr is ignored when webrtc is enabled or pass_through is True.")
@@ -310,7 +313,7 @@ class TeleVuer:
 
         except:
             pass
-    
+
     ## immersive MODE
     async def main_image_binocular_zmq(self, session):
         if self.use_hand_tracking:
@@ -341,8 +344,8 @@ class TeleVuer:
                         aspect=self.aspect_ratio,
                         height=1,
                         distanceToCamera=1,
-                        # The underlying rendering engine supported a layer binary bitmask for both objects and the camera. 
-                        # Below we set the two image planes, left and right, to layers=1 and layers=2. 
+                        # The underlying rendering engine supported a layer binary bitmask for both objects and the camera.
+                        # Below we set the two image planes, left and right, to layers=1 and layers=2.
                         # Note that these two masks are associated with left eye’s camera and the right eye’s camera.
                         layers=1,
                         format="jpeg",
@@ -381,7 +384,7 @@ class TeleVuer:
         else:
             session.upsert(
                 MotionControllers(
-                    stream=True, 
+                    stream=True,
                     key="motionControllers",
                     left=True,
                     right=True,
@@ -421,7 +424,7 @@ class TeleVuer:
         else:
             session.upsert(
                 MotionControllers(
-                    stream=True, 
+                    stream=True,
                     key="motionControllers",
                     left=True,
                     right=True,
@@ -434,7 +437,7 @@ class TeleVuer:
                 WebRTCStereoVideoPlane(
                     src=self.webrtc_url,
                     iceServer=None,
-                    iceServers=[], 
+                    iceServers=[],
                     key="video-quad",
                     aspect=self.aspect_ratio,
                     height = 7,
@@ -458,7 +461,7 @@ class TeleVuer:
         else:
             session.upsert(
                 MotionControllers(
-                    stream=True, 
+                    stream=True,
                     key="motionControllers",
                     left=True,
                     right=True,
@@ -510,8 +513,8 @@ class TeleVuer:
                         aspect=self.aspect_ratio,
                         height=0.75,
                         distanceToCamera=2,
-                        # The underlying rendering engine supported a layer binary bitmask for both objects and the camera. 
-                        # Below we set the two image planes, left and right, to layers=1 and layers=2. 
+                        # The underlying rendering engine supported a layer binary bitmask for both objects and the camera.
+                        # Below we set the two image planes, left and right, to layers=1 and layers=2.
                         # Note that these two masks are associated with left eye’s camera and the right eye’s camera.
                         layers=1,
                         format="jpeg",
@@ -550,7 +553,7 @@ class TeleVuer:
         else:
             session.upsert(
                 MotionControllers(
-                    stream=True, 
+                    stream=True,
                     key="motionControllers",
                     left=True,
                     right=True,
@@ -590,7 +593,7 @@ class TeleVuer:
         else:
             session.upsert(
                 MotionControllers(
-                    stream=True, 
+                    stream=True,
                     key="motionControllers",
                     left=True,
                     right=True,
@@ -603,7 +606,7 @@ class TeleVuer:
                 WebRTCStereoVideoPlane(
                     src=self.webrtc_url,
                     iceServer=None,
-                    iceServers=[], 
+                    iceServers=[],
                     key="video-quad",
                     aspect=self.aspect_ratio,
                     height=3,
@@ -627,7 +630,7 @@ class TeleVuer:
         else:
             session.upsert(
                 MotionControllers(
-                    stream=True, 
+                    stream=True,
                     key="motionControllers",
                     left=True,
                     right=True,
@@ -664,7 +667,7 @@ class TeleVuer:
         else:
             session.upsert(
                 MotionControllers(
-                    stream=True, 
+                    stream=True,
                     key="motionControllers",
                     left=True,
                     right=True,
