@@ -180,7 +180,7 @@ class TeleVuer:
 
     def _vuer_run(self):
         try:
-            self.vuer.run()
+            self.vuer.start()
         except KeyboardInterrupt:
             pass
         except Exception as e:
@@ -435,13 +435,11 @@ class TeleVuer:
         while True:
             session.upsert(
                 WebRTCStereoVideoPlane(
-                    src=self.webrtc_url,
-                    iceServer=None,
-                    iceServers=[],
+                    stream=self.webrtc_url,
                     key="video-quad",
                     aspect=self.aspect_ratio,
                     height = 7,
-                    layout="stereo-left-right"
+                    layout="side-by-side"
                 ),
                 to="bgChildren",
             )
@@ -472,9 +470,7 @@ class TeleVuer:
         while True:
             session.upsert(
                 WebRTCVideoPlane(
-                    src=self.webrtc_url,
-                    iceServer=None,
-                    iceServers=[],
+                    stream=self.webrtc_url,
                     key="video-quad",
                     aspect=self.aspect_ratio,
                     height = 7,
@@ -604,13 +600,11 @@ class TeleVuer:
         while True:
             session.upsert(
                 WebRTCStereoVideoPlane(
-                    src=self.webrtc_url,
-                    iceServer=None,
-                    iceServers=[],
+                    stream=self.webrtc_url,
                     key="video-quad",
                     aspect=self.aspect_ratio,
                     height=3,
-                    layout="stereo-left-right"
+                    layout="side-by-side"
                 ),
                 to="bgChildren",
             )
@@ -641,9 +635,7 @@ class TeleVuer:
         while True:
             session.upsert(
                 WebRTCVideoPlane(
-                    src=self.webrtc_url,
-                    iceServer=None,
-                    iceServers=[],
+                    stream=self.webrtc_url,
                     key="video-quad",
                     aspect=self.aspect_ratio,
                     height=3,
