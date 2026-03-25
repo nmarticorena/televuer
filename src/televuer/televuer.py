@@ -335,9 +335,6 @@ class TeleVuer:
             pass
 
     def _upsert_robot_pose_marker(self, session):
-        if CoordsMarker is None:
-            return
-
         with self.robot_pose_marker_visible_shared.get_lock():
             if not bool(self.robot_pose_marker_visible_shared.value):
                 return
@@ -349,6 +346,7 @@ class TeleVuer:
             CoordsMarker(
                 key="robot-pose-marker",
                 matrix=marker_pose.flatten(order="F").tolist(),
+                scale = 0.2
             ),
             to="bgChildren",
         )
