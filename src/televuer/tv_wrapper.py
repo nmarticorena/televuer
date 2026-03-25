@@ -433,6 +433,23 @@ class TeleVuerWrapper:
         
     def render_to_xr(self, img):
         self.tvuer.render_to_xr(img)
-    
+
+    def set_robot_pose_marker(self, pose, visible: bool=True, pose_basis: Literal["robot", "openxr"]="robot"):
+        """
+        Update the XR CoordsMarker pose.
+
+        pose_basis="robot" expects the pose in the Robot basis convention.
+        pose_basis="openxr" sends the pose directly to Vuer unchanged.
+        """
+        pose = np.asarray(pose, dtype=np.float64)
+        if pose_basis == "robot":
+            pose = T_OPENXR_ROBOT @ pose @ T_ROBOT_OPENXR
+        elif pose_basis != "openxr":
+            raise ValueError(f"Unknown pose_basis: {pose_basis}")
+        self.tvuer.set_robot_pose_marker(pose, visible=visible)
+
+    def clear_robot_pose_marker(self):
+        self.tvuer.clear_robot_pose_marker()
+
     def close(self):
         self.tvuer.close()

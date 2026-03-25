@@ -1,7 +1,7 @@
 import traceback
 from tracemalloc import Traceback
 from vuer import Vuer
-from vuer.schemas import ImageBackground, Hands, MotionControllers, WebRTCVideoPlane, WebRTCStereoVideoPlane
+from vuer.schemas import ImageBackground, Hands, MotionControllers, WebRTCVideoPlane, WebRTCStereoVideoPlane, CoordsMarker
 from multiprocessing import Value, Array, Process, shared_memory
 import numpy as np
 import asyncio
@@ -140,6 +140,8 @@ class TeleVuer:
         self.head_pose_shared = Array('d', 16, lock=True)
         self.left_arm_pose_shared = Array('d', 16, lock=True)
         self.right_arm_pose_shared = Array('d', 16, lock=True)
+        self.robot_pose_marker_shared = Array('d', np.eye(4).flatten(order="F"), lock=True)
+        self.robot_pose_marker_visible_shared = Value('b', False, lock=True)
         if self.use_hand_tracking:
             self.left_hand_position_shared = Array('d', 75, lock=True)
             self.right_hand_position_shared = Array('d', 75, lock=True)
@@ -207,6 +209,24 @@ class TeleVuer:
             return
         self.latest_frame = image
         self.new_frame_event.set()
+
+    def set_robot_pose_marker(self, pose, visible: bool=True):
+        """Set the world pose of the robot marker shown in the XR scene."""
+        pose = np.asarray(pose, dtype=np.float64)
+        if pose.shape != (4, 4):
+            raise ValueError("[TeleVuer] robot pose marker must be a 4x4 matrix.")
+        if not np.all(np.isfinite(pose)):
+            raise ValueError("[TeleVuer] robot pose marker contains non-finite values.")
+
+        with self.robot_pose_marker_shared.get_lock():
+            self.robot_pose_marker_shared[:] = pose.flatten(order="F")
+        with self.robot_pose_marker_visible_shared.get_lock():
+            self.robot_pose_marker_visible_shared.value = bool(visible)
+
+    def clear_robot_pose_marker(self):
+        """Hide the robot pose marker from the XR scene."""
+        with self.robot_pose_marker_visible_shared.get_lock():
+            self.robot_pose_marker_visible_shared.value = False
 
     def close(self):
         self.process.terminate()
@@ -314,6 +334,25 @@ class TeleVuer:
         except:
             pass
 
+    def _upsert_robot_pose_marker(self, session):
+        if CoordsMarker is None:
+            return
+
+        with self.robot_pose_marker_visible_shared.get_lock():
+            if not bool(self.robot_pose_marker_visible_shared.value):
+                return
+
+        with self.robot_pose_marker_shared.get_lock():
+            marker_pose = np.array(self.robot_pose_marker_shared[:]).reshape(4, 4, order="F")
+
+        session.upsert(
+            CoordsMarker(
+                key="robot-pose-marker",
+                matrix=marker_pose.flatten(order="F").tolist(),
+            ),
+            to="bgChildren",
+        )
+
     ## immersive MODE
     async def main_image_binocular_zmq(self, session):
         if self.use_hand_tracking:
@@ -321,8 +360,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -337,6 +376,7 @@ class TeleVuer:
                 to="bgChildren",
             )
         while True:
+            self._upsert_robot_pose_marker(session)
             session.upsert(
                 [
                     ImageBackground(
@@ -376,8 +416,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -393,6 +433,7 @@ class TeleVuer:
             )
 
         while True:
+            self._upsert_robot_pose_marker(session)
             session.upsert(
                 [
                     ImageBackground(
@@ -416,8 +457,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -433,6 +474,7 @@ class TeleVuer:
             )
 
         while True:
+            self._upsert_robot_pose_marker(session)
             session.upsert(
                 WebRTCStereoVideoPlane(
                     stream=self.webrtc_url,
@@ -451,8 +493,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -468,6 +510,7 @@ class TeleVuer:
             )
 
         while True:
+            self._upsert_robot_pose_marker(session)
             session.upsert(
                 WebRTCVideoPlane(
                     stream=self.webrtc_url,
@@ -486,8 +529,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -502,6 +545,7 @@ class TeleVuer:
                 to="bgChildren",
             )
         while True:
+            self._upsert_robot_pose_marker(session)
             session.upsert(
                 [
                     ImageBackground(
@@ -541,8 +585,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -558,6 +602,7 @@ class TeleVuer:
             )
 
         while True:
+            self._upsert_robot_pose_marker(session)
             session.upsert(
                 [
                     ImageBackground(
@@ -581,8 +626,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -598,6 +643,7 @@ class TeleVuer:
             )
 
         while True:
+            self._upsert_robot_pose_marker(session)
             session.upsert(
                 WebRTCStereoVideoPlane(
                     stream=self.webrtc_url,
@@ -616,8 +662,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -633,6 +679,7 @@ class TeleVuer:
             )
 
         while True:
+            self._upsert_robot_pose_marker(session)
             session.upsert(
                 WebRTCVideoPlane(
                     stream=self.webrtc_url,
@@ -651,8 +698,8 @@ class TeleVuer:
                 Hands(
                     stream=True,
                     key="hands",
-                    hideLeft=True,
-                    hideRight=True
+                    hideLeft=False,
+                    hideRight=False
                 ),
                 to="bgChildren",
             )
@@ -668,6 +715,7 @@ class TeleVuer:
             )
 
         while True:
+            self._upsert_robot_pose_marker(session)
             await asyncio.sleep(1.0 / self.display_fps)
 
     # ==================== common data ====================
