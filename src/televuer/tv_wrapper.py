@@ -451,5 +451,9 @@ class TeleVuerWrapper:
     def clear_robot_pose_marker(self):
         self.tvuer.clear_robot_pose_marker()
 
+    def update_robot_pose(self, pose, visible: bool=True, pose_basis: Literal["robot", "openxr"]="robot"):
+        """Backward-compatible alias for set_robot_pose_marker."""
+        self.set_robot_pose_marker(pose, visible=visible, pose_basis=pose_basis)
+
     def close(self):
         self.tvuer.close()
