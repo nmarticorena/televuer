@@ -283,11 +283,12 @@ class TeleVuerWrapper:
             left_IPxr_Brobot_world_arm  = T_ROBOT_OPENXR @ left_IPxr_Bxr_world_arm @ T_OPENXR_ROBOT
             right_IPxr_Brobot_world_arm = T_ROBOT_OPENXR @ right_IPxr_Bxr_world_arm @ T_OPENXR_ROBOT
 
-            # Current Vuer hand-tracking wrist poses already align with the wrist convention
-            # expected by the IK target, so applying the legacy Unitree-arm 90 degree
-            # correction here introduces a persistent orientation offset.
-            left_IPunitree_Brobot_world_arm = left_IPxr_Brobot_world_arm.copy()
-            right_IPunitree_Brobot_world_arm = right_IPxr_Brobot_world_arm.copy()
+            # Change initial pose convention
+            # From (initial pose) OpenXR Arm Convention to (initial pose) Unitree Humanoid Arm URDF Convention
+            # Reason for right multiply (T_TO_UNITREE_HUMANOID_LEFT_ARM) : Rotate 90 degrees counterclockwise about its own x-axis.
+            # Reason for right multiply (T_TO_UNITREE_HUMANOID_RIGHT_ARM): Rotate 90 degrees clockwise about its own x-axis.
+            left_IPunitree_Brobot_world_arm = left_IPxr_Brobot_world_arm @ (T_TO_UNITREE_HUMANOID_LEFT_ARM if left_arm_is_valid else np.eye(4))
+            right_IPunitree_Brobot_world_arm = right_IPxr_Brobot_world_arm @ (T_TO_UNITREE_HUMANOID_RIGHT_ARM if right_arm_is_valid else np.eye(4))
 
             # Transfer from WORLD to HEAD coordinate (translation adjustment only)
             left_IPunitree_Brobot_head_arm = left_IPunitree_Brobot_world_arm.copy()
