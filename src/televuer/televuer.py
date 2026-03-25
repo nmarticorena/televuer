@@ -340,13 +340,13 @@ class TeleVuer:
                 return
 
         with self.robot_pose_marker_shared.get_lock():
-            marker_pose = np.array(self.robot_pose_marker_shared[:]).reshape(4, 4)
+            marker_pose = np.array(self.robot_pose_marker_shared[:]).reshape(4, 4, order="F")
 
         session.upsert(
             CoordsMarker(
                 key="robot-pose-marker",
                 matrix=marker_pose.flatten(order="F").tolist(),
-                scale = 0.2
+                scale=0.1,
             ),
             to="bgChildren",
         )
@@ -721,19 +721,19 @@ class TeleVuer:
     def head_pose(self):
         """np.ndarray, shape (4, 4), head SE(3) pose matrix from Vuer (basis OpenXR Convention)."""
         with self.head_pose_shared.get_lock():
-            return np.array(self.head_pose_shared[:]).reshape(4, 4)
+            return np.array(self.head_pose_shared[:]).reshape(4, 4, order="F")
 
     @property
     def left_arm_pose(self):
         """np.ndarray, shape (4, 4), left arm SE(3) pose matrix from Vuer (basis OpenXR Convention)."""
         with self.left_arm_pose_shared.get_lock():
-            return np.array(self.left_arm_pose_shared[:]).reshape(4, 4)
+            return np.array(self.left_arm_pose_shared[:]).reshape(4, 4, order="F")
 
     @property
     def right_arm_pose(self):
         """np.ndarray, shape (4, 4), right arm SE(3) pose matrix from Vuer (basis OpenXR Convention)."""
         with self.right_arm_pose_shared.get_lock():
-            return np.array(self.right_arm_pose_shared[:]).reshape(4, 4)
+            return np.array(self.right_arm_pose_shared[:]).reshape(4, 4, order="F")
 
     # ==================== Hand Tracking Data ====================
     @property
@@ -752,13 +752,13 @@ class TeleVuer:
     def left_hand_orientations(self):
         """np.ndarray, shape (25, 3, 3), left hand 25 landmarks' orientations (flattened 3x3 matrices, column-major)."""
         with self.left_hand_orientation_shared.get_lock():
-            return np.array(self.left_hand_orientation_shared[:]).reshape(25, 9).reshape(25, 3, 3)
+            return np.array(self.left_hand_orientation_shared[:]).reshape(25, 9).reshape(25, 3, 3, order="F")
 
     @property
     def right_hand_orientations(self):
         """np.ndarray, shape (25, 3, 3), right hand 25 landmarks' orientations (flattened 3x3 matrices, column-major)."""
         with self.right_hand_orientation_shared.get_lock():
-            return np.array(self.right_hand_orientation_shared[:]).reshape(25, 9).reshape(25, 3, 3)
+            return np.array(self.right_hand_orientation_shared[:]).reshape(25, 9).reshape(25, 3, 3, order="F")
 
     @property
     def left_hand_pinch(self):

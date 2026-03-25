@@ -3,8 +3,8 @@ from .televuer import TeleVuer
 from dataclasses import dataclass, field
 from typing import Literal
 """
-(basis) OpenXR Convention : y up, z back, x right. 
-(basis) Robot  Convention : z up, y left, x front.  
+(basis) OpenXR Convention : y up, z back, x right.
+(basis) Robot  Convention : z up, y left, x front.
 
 under (basis) Robot Convention, humanoid arm's initial pose convention:
 
@@ -17,7 +17,7 @@ under (basis) Robot Convention, humanoid arm's initial pose convention:
         - the x-axis pointing from wrist toward middle.
         - the y-axis pointing from pinky toward index.
         - the z-axis pointing from palm toward back of the hand.
-  
+
     # (initial pose) Unitree Humanoid Left Arm URDF Convention:
         - the x-axis pointing from wrist toward middle.
         - the y-axis pointing from palm toward back of the hand.
@@ -25,7 +25,7 @@ under (basis) Robot Convention, humanoid arm's initial pose convention:
 
     # (initial pose) Unitree Humanoid Right Arm URDF Convention:
         - the x-axis pointing from wrist toward middle.
-        - the y-axis pointing from back of the hand toward palm. 
+        - the y-axis pointing from back of the hand toward palm.
         - the z-axis pointing from pinky toward index.
 
 under (basis) Robot Convention, humanoid hand's initial pose convention:
@@ -41,25 +41,25 @@ under (basis) Robot Convention, humanoid hand's initial pose convention:
         - the z-axis pointing from palm toward back of the hand.
 
     # (initial pose) Unitree Humanoid Left Hand URDF Convention:
-        - The x-axis pointing from palm toward back of the hand. 
+        - The x-axis pointing from palm toward back of the hand.
         - The y-axis pointing from middle toward wrist.
         - The z-axis pointing from pinky toward index.
 
     # (initial pose) Unitree Humanoid Right Hand URDF Convention:
-        - The x-axis pointing from palm toward back of the hand. 
+        - The x-axis pointing from palm toward back of the hand.
         - The y-axis pointing from middle toward wrist.
-        - The z-axis pointing from index toward pinky. 
-    
-p.s. TeleVuer obtains all raw data under the (basis) OpenXR Convention. 
-     In addition, arm pose data (hand tracking) follows the (initial pose) OpenXR Arm Pose Convention, 
+        - The z-axis pointing from index toward pinky.
+
+p.s. TeleVuer obtains all raw data under the (basis) OpenXR Convention.
+     In addition, arm pose data (hand tracking) follows the (initial pose) OpenXR Arm Pose Convention,
      while arm pose data (controller tracking) directly follows the (initial pose) Unitree Humanoid Arm URDF Convention (thus no transform is needed).
      Meanwhile, all raw data is in the WORLD frame defined by XR device odometry.
 
 p.s. From website: https://registry.khronos.org/OpenXR/specs/1.1/man/html/openxr.html.
      You can find **(initial pose) OpenXR Left/Right Arm Pose Convention** related information like this below:
-     "The wrist joint is located at the pivot point of the wrist, which is location invariant when twisting the hand without moving the forearm. 
-     The backward (+Z) direction is parallel to the line from wrist joint to middle finger metacarpal joint, and points away from the finger tips. 
-     The up (+Y) direction points out towards back of the hand and perpendicular to the skin at wrist. 
+     "The wrist joint is located at the pivot point of the wrist, which is location invariant when twisting the hand without moving the forearm.
+     The backward (+Z) direction is parallel to the line from wrist joint to middle finger metacarpal joint, and points away from the finger tips.
+     The up (+Y) direction points out towards back of the hand and perpendicular to the skin at wrist.
      The X direction is perpendicular to the Y and Z directions and follows the right hand rule."
      Note: The above context is of course under **(basis) OpenXR Convention**.
 
@@ -194,7 +194,7 @@ class TeleData:
 
 class TeleVuerWrapper:
     def __init__(self, use_hand_tracking: bool, binocular: bool=True, img_shape: tuple=(480, 1280), display_fps: float=30.0,
-                       display_mode: Literal["immersive", "pass-through", "ego"]="immersive", zmq: bool=False, webrtc: bool=False, webrtc_url: str=None, 
+                       display_mode: Literal["immersive", "pass-through", "ego"]="immersive", zmq: bool=False, webrtc: bool=False, webrtc_url: str=None,
                        cert_file: str=None, key_file: str=None, return_hand_rot_data: bool=False):
         """
         TeleVuerWrapper is a wrapper for the TeleVuer class, which handles XR device's data suit for robot control.
@@ -218,14 +218,14 @@ class TeleVuerWrapper:
             * "immersive": fully immersive mode; VR shows the robot's first-person view (zmq or webrtc must be enabled).
             * "pass-through": VR shows the real world through the VR headset cameras; no image from zmq or webrtc is displayed (even if enabled).
             * "ego": a small window in the center shows the robot's first-person view, while the surrounding area shows the real world.
-        
+
         - Only one image mode is active at a time.
         - Image transmission to VR occurs only if display_mode is "immersive" or "ego" and the corresponding zmq or webrtc option is enabled.
         - If zmq and webrtc simultaneously enabled, webrtc will be prioritized.
 
         --------------              -------------------           --------------       -----------------                     -------
          display_mode       |        display behavior         |    image to VR     |      image source        |               Notes
-        --------------              -------------------           --------------       -----------------                     ------- 
+        --------------              -------------------           --------------       -----------------                     -------
            immersive        |   fully immersive view (robot)  |     Yes (full)     |     zmq or webrtc        |   if both enabled, webrtc prioritized
         --------------              -------------------           --------------       -----------------                     -------
          pass-through       |       Real world view (VR)      |         No         |          N/A             |  even if image source enabled, don't display
@@ -236,9 +236,9 @@ class TeleVuerWrapper:
         self.use_hand_tracking = use_hand_tracking
         self.return_hand_rot_data = return_hand_rot_data
         self.tvuer = TeleVuer(use_hand_tracking=use_hand_tracking, binocular=binocular, img_shape=img_shape, display_fps=display_fps,
-                              display_mode=display_mode, zmq=zmq, webrtc=webrtc, webrtc_url=webrtc_url, 
+                              display_mode=display_mode, zmq=zmq, webrtc=webrtc, webrtc_url=webrtc_url,
                               cert_file=cert_file, key_file=key_file)
-        
+
     def get_tele_data(self):
         """
         Get processed motion state data from the TeleVuer instance.
@@ -249,7 +249,7 @@ class TeleVuerWrapper:
         # ┌────────────┬───────────────────────────┬──────────────────────────────────┬────────────────────────────────────┬────────────────────────────────────┐
         # │left / right│          Bxr              │              Brobot              │               IPxr                 │             IPunitree              │
         # │────────────│───────────────────────────│──────────────────────────────────│────────────────────────────────────│────────────────────────────────────│
-        # │    side    │ (basis) OpenXR Convention │     (basis) Robot Convention     │  (initial pose) OpenXR Convention  │ (initial pose) Unitree Convention  │ 
+        # │    side    │ (basis) OpenXR Convention │     (basis) Robot Convention     │  (initial pose) OpenXR Convention  │ (initial pose) Unitree Convention  │
         # └────────────┴───────────────────────────┴──────────────────────────────────┴────────────────────────────────────┴────────────────────────────────────┘
         # ┌───────────────────────────────────┬─────────────────────┐
         # │    world / arm / head / waist     │  arm / head / hand  │
@@ -287,8 +287,10 @@ class TeleVuerWrapper:
             # From (initial pose) OpenXR Arm Convention to (initial pose) Unitree Humanoid Arm URDF Convention
             # Reason for right multiply (T_TO_UNITREE_HUMANOID_LEFT_ARM) : Rotate 90 degrees counterclockwise about its own x-axis.
             # Reason for right multiply (T_TO_UNITREE_HUMANOID_RIGHT_ARM): Rotate 90 degrees clockwise about its own x-axis.
-            left_IPunitree_Brobot_world_arm = left_IPxr_Brobot_world_arm @ (T_TO_UNITREE_HUMANOID_LEFT_ARM if left_arm_is_valid else np.eye(4))
-            right_IPunitree_Brobot_world_arm = right_IPxr_Brobot_world_arm @ (T_TO_UNITREE_HUMANOID_RIGHT_ARM if right_arm_is_valid else np.eye(4))
+            # left_IPunitree_Brobot_world_arm = left_IPxr_Brobot_world_arm @ (T_TO_UNITREE_HUMANOID_LEFT_ARM if left_arm_is_valid else np.eye(4))
+            # right_IPunitree_Brobot_world_arm = right_IPxr_Brobot_world_arm @ (T_TO_UNITREE_HUMANOID_RIGHT_ARM if right_arm_is_valid else np.eye(4))
+            left_IPunitree_Brobot_world_arm = left_IPxr_Brobot_world_arm.copy()
+            right_IPunitree_Brobot_world_arm = right_IPxr_Brobot_world_arm.copy()
 
             # Transfer from WORLD to HEAD coordinate (translation adjustment only)
             left_IPunitree_Brobot_head_arm = left_IPunitree_Brobot_world_arm.copy()
@@ -298,7 +300,7 @@ class TeleVuerWrapper:
 
             # =====coordinate origin offset=====
             # The origin of the coordinate for IK Solve is near the WAIST joint motor. You can use teleop/robot_control/robot_arm_ik.py Unit_Test to visualize it.
-            # The origin of the coordinate of IPunitree_Brobot_head_arm is HEAD. 
+            # The origin of the coordinate of IPunitree_Brobot_head_arm is HEAD.
             # So it is necessary to translate the origin of IPunitree_Brobot_head_arm from HEAD to WAIST.
             left_IPunitree_Brobot_wrist_arm = left_IPunitree_Brobot_head_arm.copy()
             right_IPunitree_Brobot_wrist_arm = right_IPunitree_Brobot_head_arm.copy()
@@ -329,11 +331,11 @@ class TeleVuerWrapper:
                 #   Brobot_{world}_{arm}^T * Brobot_{world}_pos ==> Brobot_{arm}_{world} * Brobot_{world}_pos ==> Brobot_arm_hand_pos, Now it's based on the arm frame.
                 left_IPxr_Brobot_arm_hand_pos  = fast_mat_inv(left_IPxr_Brobot_world_arm) @ left_IPxr_Brobot_world_hand_pos
                 right_IPxr_Brobot_arm_hand_pos = fast_mat_inv(right_IPxr_Brobot_world_arm) @ right_IPxr_Brobot_world_hand_pos
-                
+
                 # Change initial pose convention
                 # From (initial pose) XR Hand Convention to (initial pose) Unitree Humanoid Hand URDF Convention:
                 #   T_TO_UNITREE_HAND @ IPxr_Brobot_arm_hand_pos ==> IPunitree_Brobot_arm_hand_pos
-                #   ((4,4) @ (4,25))[0:3, :].T ==> (4,25)[0:3, :].T ==> (3,25).T ==> (25,3)           
+                #   ((4,4) @ (4,25))[0:3, :].T ==> (4,25)[0:3, :].T ==> (3,25).T ==> (25,3)
                 # Now under (initial pose) Unitree Humanoid Hand URDF Convention, matrix shape like this:
                 #    [x0, y0, z0]
                 #    [x1, y1, z1]
@@ -399,7 +401,7 @@ class TeleVuerWrapper:
 
             # =====coordinate origin offset=====
             # The origin of the coordinate for IK Solve is near the WAIST joint motor. You can use teleop/robot_control/robot_arm_ik.py Unit_Test to check it.
-            # The origin of the coordinate of IPunitree_Brobot_head_arm is HEAD. 
+            # The origin of the coordinate of IPunitree_Brobot_head_arm is HEAD.
             # So it is necessary to translate the origin of IPunitree_Brobot_head_arm from HEAD to WAIST.
             left_IPunitree_Brobot_wrist_arm = left_IPunitree_Brobot_head_arm.copy()
             right_IPunitree_Brobot_wrist_arm = right_IPunitree_Brobot_head_arm.copy()
@@ -430,7 +432,7 @@ class TeleVuerWrapper:
                 right_ctrl_thumbstick=self.tvuer.right_ctrl_thumbstick,
                 right_ctrl_thumbstickValue=self.tvuer.right_ctrl_thumbstickValue,
             )
-        
+
     def render_to_xr(self, img):
         self.tvuer.render_to_xr(img)
 
@@ -450,10 +452,6 @@ class TeleVuerWrapper:
 
     def clear_robot_pose_marker(self):
         self.tvuer.clear_robot_pose_marker()
-
-    def update_robot_pose(self, pose, visible: bool=True, pose_basis: Literal["robot", "openxr"]="robot"):
-        """Backward-compatible alias for set_robot_pose_marker."""
-        self.set_robot_pose_marker(pose, visible=visible, pose_basis=pose_basis)
 
     def close(self):
         self.tvuer.close()
