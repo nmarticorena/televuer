@@ -387,7 +387,7 @@ class TeleVuer:
                         # Note that these two masks are associated with left eye’s camera and the right eye’s camera.
                         layers=1,
                         format="jpeg",
-                        quality=80,
+                        quality=60,
                         key="background-left",
                         interpolate=True,
                     ),
@@ -398,7 +398,7 @@ class TeleVuer:
                         distanceToCamera=1,
                         layers=2,
                         format="jpeg",
-                        quality=80,
+                        quality=60,
                         key="background-right",
                         interpolate=True,
                     ),
@@ -440,7 +440,7 @@ class TeleVuer:
                         height=1,
                         distanceToCamera=1,
                         format="jpeg",
-                        quality=80,
+                        quality=60,
                         key="background-mono",
                         interpolate=True,
                     ),
@@ -471,18 +471,19 @@ class TeleVuer:
                 to="bgChildren",
             )
 
+        session.upsert(
+            WebRTCStereoVideoPlane(
+                stream=self.webrtc_url,
+                key="video-quad",
+                aspect=self.aspect_ratio,
+                height = 7,
+                layout="side-by-side"
+            ),
+            to="bgChildren",
+        )
+
         while True:
             self._upsert_robot_pose_marker(session)
-            session.upsert(
-                WebRTCStereoVideoPlane(
-                    stream=self.webrtc_url,
-                    key="video-quad",
-                    aspect=self.aspect_ratio,
-                    height = 7,
-                    layout="side-by-side"
-                ),
-                to="bgChildren",
-            )
             await asyncio.sleep(1.0 / self.display_fps)
 
     async def main_image_monocular_webrtc(self, session):
@@ -507,17 +508,18 @@ class TeleVuer:
                 to="bgChildren",
             )
 
+        session.upsert(
+            WebRTCVideoPlane(
+                stream=self.webrtc_url,
+                key="video-quad",
+                aspect=self.aspect_ratio,
+                height = 7,
+            ),
+            to="bgChildren",
+        )
+
         while True:
             self._upsert_robot_pose_marker(session)
-            session.upsert(
-                WebRTCVideoPlane(
-                    stream=self.webrtc_url,
-                    key="video-quad",
-                    aspect=self.aspect_ratio,
-                    height = 7,
-                ),
-                to="bgChildren",
-            )
             await asyncio.sleep(1.0 / self.display_fps)
 
     ## ego MODE
@@ -556,7 +558,7 @@ class TeleVuer:
                         # Note that these two masks are associated with left eye’s camera and the right eye’s camera.
                         layers=1,
                         format="jpeg",
-                        quality=80,
+                        quality=60,
                         key="background-left",
                         interpolate=True,
                     ),
@@ -567,7 +569,7 @@ class TeleVuer:
                         distanceToCamera=2,
                         layers=2,
                         format="jpeg",
-                        quality=80,
+                        quality=60,
                         key="background-right",
                         interpolate=True,
                     ),
@@ -609,7 +611,7 @@ class TeleVuer:
                         height=0.75,
                         distanceToCamera=2,
                         format="jpeg",
-                        quality=80,
+                        quality=60,
                         key="background-mono",
                         interpolate=True,
                     ),
@@ -640,18 +642,19 @@ class TeleVuer:
                 to="bgChildren",
             )
 
+        session.upsert(
+            WebRTCStereoVideoPlane(
+                stream=self.webrtc_url,
+                key="video-quad",
+                aspect=self.aspect_ratio,
+                height=3,
+                layout="side-by-side"
+            ),
+            to="bgChildren",
+        )
+
         while True:
             self._upsert_robot_pose_marker(session)
-            session.upsert(
-                WebRTCStereoVideoPlane(
-                    stream=self.webrtc_url,
-                    key="video-quad",
-                    aspect=self.aspect_ratio,
-                    height=3,
-                    layout="side-by-side"
-                ),
-                to="bgChildren",
-            )
             await asyncio.sleep(1.0 / self.display_fps)
 
     async def main_image_monocular_webrtc_ego(self, session):
@@ -676,17 +679,18 @@ class TeleVuer:
                 to="bgChildren",
             )
 
+        session.upsert(
+            WebRTCVideoPlane(
+                stream=self.webrtc_url,
+                key="video-quad",
+                aspect=self.aspect_ratio,
+                height=3,
+            ),
+            to="bgChildren",
+        )
+
         while True:
             self._upsert_robot_pose_marker(session)
-            session.upsert(
-                WebRTCVideoPlane(
-                    stream=self.webrtc_url,
-                    key="video-quad",
-                    aspect=self.aspect_ratio,
-                    height=3,
-                ),
-                to="bgChildren",
-            )
             await asyncio.sleep(1.0 / self.display_fps)
 
     ## pass-through MODE
